@@ -12,20 +12,20 @@ class GuessNumber(object):
                             Try to guess that number between %s and %s, we will hint  you along the way.
                         """ % (self.minmum_num, self.max_num)
 
-    def _parse_args(self):
-        def add_arguments():
-            parser = argparse.ArgumentParser()
-            parser.add_argument("--min", dest="min_val", type=int, default=0,
-                                help='Minmum value of the range, that user will guess from - default 0')
-            parser.add_argument("--max", dest="max_val", type=int, default=100,
-                                help='Maximum value, of the range that user will guess from - default 100')
-            parser.add_argument("-n", "--the_number", dest="number_to_guess", type=int, 
-                                help="The Number that user will try to guess, or it will be randomized")
-            parser.add_argument("-t", "--max_tries", dest="max_number_of_tries", type=int,
-                                help="Maximum Number of Tries, or there will be no limit.")
-            return parser.parse_args()
+    def _add_arguments(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--min", dest="min_val", type=int, default=0,
+                            help='Minmum value of the range, that user will guess from - default 0')
+        parser.add_argument("--max", dest="max_val", type=int, default=100,
+                            help='Maximum value, of the range that user will guess from - default 100')
+        parser.add_argument("-n", "--the_number", dest="number_to_guess", type=int, 
+                            help="The Number that user will try to guess, or it will be randomized")
+        parser.add_argument("-t", "--max_tries", dest="max_number_of_tries", type=int,
+                            help="Maximum Number of Tries, or there will be no limit.")
+        return parser.parse_args()
 
-        args = add_arguments()
+    def _parse_args(self):
+        args = self._add_arguments()
         self.minmum_num = args.min_val
         self.max_num = args.max_val
         if self.minmum_num >= self.max_num:
@@ -59,7 +59,12 @@ class GuessNumber(object):
                 print("This is your %s guess, You have %s left." % (self.number_of_tries, self.max_number_of_tries - self.number_of_tries))
             self.guess_value = int(self._guess())
             self.number_of_tries += 1
-        (self._congrats, self._game_over)[self.guess_value != self.random_number]()
+        result_function_map = {
+            "CONGRATS": self._congrats,
+            "GAME_OVER": self._game_over,
+        }
+        result_function = ("CONGRATS", "GAME_OVER")[self.guess_value != self.random_number]
+        result_function_map[result_function]()
 
     def _validate(func):
         @functools.wraps(func)
